@@ -1,0 +1,2 @@
+/Users/bekzodfluttergmail.com/PROEJECTS/Parent-RS/android/app/.cxx/RelWithDebInfo/5b27593n/x86/CMakeFiles/edit_cache.dir
+/Users/bekzodfluttergmail.com/PROEJECTS/Parent-RS/android/app/.cxx/RelWithDebInfo/5b27593n/x86/CMakeFiles/rebuild_cache.dir
