@@ -1,12 +1,32 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:parent_rs/firebase_options.dart';
 import 'flutter_flow/flutter_flow_util.dart';
+import 'flutter_flow/fcm_token_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
+
+  await FirebaseMessaging.instance.requestPermission();
+
+  await Permission.microphone.request();
+
+  // FCM token refresh listener'ni sozlash
+  FCMTokenHelper.setupTokenRefreshListener();
+
+  // FCM tokenni olish va log qilish
+  final token = await FCMTokenHelper.getFCMToken();
+  debugPrint('Initial FCM Token: $token');
 
   runApp(const MyApp());
 }
@@ -38,7 +58,7 @@ class _MyAppState extends State<MyApp> {
 
   List<String> getRouteStack() =>
       _router.routerDelegate.currentConfiguration.matches
-          .map((e) => getRoute(e))
+          .map((e) => getRoute(e as RouteMatch))
           .toList();
 
   @override

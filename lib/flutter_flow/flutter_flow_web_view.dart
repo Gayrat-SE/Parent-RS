@@ -9,7 +9,6 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webviewx_plus/webviewx_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-
 import 'flutter_flow_util.dart';
 
 class FlutterFlowWebView extends StatefulWidget {
@@ -22,7 +21,7 @@ class FlutterFlowWebView extends StatefulWidget {
     this.horizontalScroll = false,
     this.verticalScroll = false,
     this.html = false,
-        required this.onCreated,
+    required this.onCreated,
   });
 
   final String content;
@@ -32,7 +31,7 @@ class FlutterFlowWebView extends StatefulWidget {
   final bool horizontalScroll;
   final bool verticalScroll;
   final bool html;
-    final Function(WebViewXController controller) onCreated;
+  final Function(WebViewXController controller) onCreated;
 
   @override
   _FlutterFlowWebViewState createState() => _FlutterFlowWebViewState();
@@ -46,8 +45,7 @@ class _FlutterFlowWebViewState extends State<FlutterFlowWebView> {
         height: widget.height ?? MediaQuery.sizeOf(context).height,
         ignoreAllGestures: false,
         initialContent: widget.content,
-        initialMediaPlaybackPolicy:
-            AutoMediaPlaybackPolicy.requireUserActionForAllMediaTypes,
+        initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.alwaysAllow,
         initialSourceType: widget.html
             ? SourceType.html
             : widget.bypass
@@ -60,7 +58,7 @@ class _FlutterFlowWebViewState extends State<FlutterFlowWebView> {
                 controller.connector.platform as AndroidWebViewController;
             await androidController.setOnShowFileSelector(_androidFilePicker);
           }
-            widget.onCreated(controller);
+          widget.onCreated(controller);
         },
         navigationDelegate: (request) async {
           if (isAndroid) {
@@ -81,7 +79,7 @@ class _FlutterFlowWebViewState extends State<FlutterFlowWebView> {
           webAllowFullscreenContent: true,
         ),
         mobileSpecificParams: MobileSpecificParams(
-          debuggingEnabled: false,
+          debuggingEnabled: true,
           gestureNavigationEnabled: true,
           mobileGestureRecognizers: {
             if (widget.verticalScroll)
@@ -95,6 +93,8 @@ class _FlutterFlowWebViewState extends State<FlutterFlowWebView> {
           },
           androidEnableHybridComposition: true,
         ),
+        userAgent:
+            'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36',
       );
 
   Key get webviewKey => Key(
