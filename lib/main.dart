@@ -8,6 +8,7 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:parent_rs/firebase_options.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/fcm_token_helper.dart';
+import 'flutter_flow/awesome_notification_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,9 +18,25 @@ void main() async {
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
 
+  // Firebase Messaging permission
   await FirebaseMessaging.instance.requestPermission();
 
+  // Microphone permission
   await Permission.microphone.request();
+
+  // Initialize AwesomeNotifications (bu ichida permission request bor)
+  await AwesomeNotificationHelper.initialize();
+
+  // Setup foreground message handler
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    debugPrint('📱 Foreground notification received!');
+    debugPrint('Title: ${message.notification?.title}');
+    debugPrint('Body: ${message.notification?.body}');
+    debugPrint('Data: ${message.data}');
+
+    // Show notification using AwesomeNotifications
+    AwesomeNotificationHelper.showNotificationFromFirebase(message);
+  });
 
   // FCM token refresh listener'ni sozlash
   FCMTokenHelper.setupTokenRefreshListener();
