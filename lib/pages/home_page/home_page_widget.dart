@@ -2,7 +2,6 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_inapp_web_view.dart';
 import '/flutter_flow/webview_permission_helper.dart';
-import '/flutter_flow/api_logger_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'home_page_model.dart';
@@ -89,26 +88,6 @@ class _HomePageWidgetState extends State<HomePageWidget>
               ),
             ],
           ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            if (_isControllerInitialized && _controller != null) {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) =>
-                      APILoggerViewer(controller: _controller),
-                ),
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('WebView not initialized yet'),
-                ),
-              );
-            }
-          },
-          tooltip: 'View API Logs',
-          child: const Icon(Icons.bug_report),
         ),
       ),
     );
