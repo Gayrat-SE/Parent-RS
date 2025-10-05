@@ -1,8 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
-
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:parent_rs/firebase_options.dart';
@@ -12,6 +10,7 @@ import 'flutter_flow/awesome_notification_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -21,10 +20,6 @@ void main() async {
   // Firebase Messaging permission
   await FirebaseMessaging.instance.requestPermission();
 
-  // Microphone permission
-  await Permission.microphone.request();
-
-  // Initialize AwesomeNotifications (bu ichida permission request bor)
   await AwesomeNotificationHelper.initialize();
 
   // Setup foreground message handler
@@ -44,6 +39,10 @@ void main() async {
   // FCM tokenni olish va log qilish
   final token = await FCMTokenHelper.getFCMToken();
   debugPrint('Initial FCM Token: $token');
+
+  // Note: Microphone permission will be requested when HomePage loads
+  // This ensures proper UI context for the permission dialog
+  debugPrint('🎤 Microphone permission will be requested when app UI is ready');
 
   runApp(const MyApp());
 }

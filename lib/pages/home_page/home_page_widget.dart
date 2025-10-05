@@ -1,7 +1,7 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_inapp_web_view.dart';
-import '/flutter_flow/webview_permission_helper.dart';
+import '/flutter_flow/permission_request_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'home_page_model.dart';
@@ -30,6 +30,11 @@ class _HomePageWidgetState extends State<HomePageWidget>
     super.initState();
     _model = createModel(context, () => HomePageModel());
     WidgetsBinding.instance.addObserver(this);
+
+    // Request microphone permission after the first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      PermissionRequestHelper.requestMicrophonePermission(context);
+    });
   }
 
   @override
@@ -73,13 +78,6 @@ class _HomePageWidgetState extends State<HomePageWidget>
                   onCreated: (controller) async {
                     _controller = controller;
                     _isControllerInitialized = true;
-
-                    // Request and configure WebView permissions
-                    await WebViewPermissionHelper
-                        .requestAndConfigurePermissions();
-
-                    debugPrint(
-                        "InAppWebView created and configured for microphone access");
                   },
                   content: 'https://parent.rahimovschool.uz',
                   verticalScroll: false,
