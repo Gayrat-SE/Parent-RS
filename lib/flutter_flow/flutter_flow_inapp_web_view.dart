@@ -176,7 +176,7 @@ class _FlutterFlowInAppWebViewState extends State<FlutterFlowInAppWebView> {
         );
         debugPrint("✅ API Request Logger injected into WebView");
 
-        // Inject JavaScript to handle getUserMedia with enhanced permission handling
+        // Inject JavaScript to handle getUserMedia and MediaRecorder with enhanced support
         await controller.evaluateJavascript(source: '''
           (function() {
             console.log('🎤 Initializing enhanced media permission handler...');
@@ -245,6 +245,68 @@ class _FlutterFlowInAppWebViewState extends State<FlutterFlowInAppWebView> {
 
                 return originalQuery(permissionDesc);
               };
+            }
+
+            // Fix MediaRecorder mimeType support for iOS/Safari
+            if (typeof MediaRecorder !== 'undefined') {
+              console.log('🎙️ Setting up MediaRecorder mimeType compatibility...');
+
+              // Store original MediaRecorder
+              const OriginalMediaRecorder = MediaRecorder;
+
+              // Get supported mimeTypes for iOS/Safari
+              const getSupportedMimeType = function() {
+                const types = [
+                  'audio/mp4',
+                  'audio/webm;codecs=opus',
+                  'audio/webm',
+                  'audio/ogg;codecs=opus',
+                  'audio/ogg',
+                  'audio/wav',
+                  ''  // Empty string means use default
+                ];
+
+                for (let type of types) {
+                  if (type === '' || MediaRecorder.isTypeSupported(type)) {
+                    console.log('✅ Supported mimeType found:', type || 'default');
+                    return type;
+                  }
+                }
+
+                console.log('⚠️ No specific mimeType supported, using default');
+                return '';
+              };
+
+              // Override MediaRecorder constructor
+              window.MediaRecorder = function(stream, options) {
+                options = options || {};
+
+                // If mimeType is specified but not supported, find a supported one
+                if (options.mimeType && !MediaRecorder.isTypeSupported(options.mimeType)) {
+                  console.warn('⚠️ Requested mimeType not supported:', options.mimeType);
+                  const supportedType = getSupportedMimeType();
+                  console.log('🔄 Using supported mimeType instead:', supportedType || 'default');
+
+                  if (supportedType) {
+                    options.mimeType = supportedType;
+                  } else {
+                    delete options.mimeType;
+                  }
+                }
+
+                console.log('🎙️ Creating MediaRecorder with options:', JSON.stringify(options));
+                return new OriginalMediaRecorder(stream, options);
+              };
+
+              // Copy static methods
+              window.MediaRecorder.isTypeSupported = OriginalMediaRecorder.isTypeSupported.bind(OriginalMediaRecorder);
+
+              // Copy prototype
+              window.MediaRecorder.prototype = OriginalMediaRecorder.prototype;
+
+              console.log('✅ MediaRecorder mimeType compatibility enabled');
+            } else {
+              console.warn('⚠️ MediaRecorder not available in this browser');
             }
 
             console.log('✅ Enhanced WebView media permission handler initialized');
