@@ -31,9 +31,22 @@ class _HomePageWidgetState extends State<HomePageWidget>
     _model = createModel(context, () => HomePageModel());
     WidgetsBinding.instance.addObserver(this);
 
-    // Request microphone permission after the first frame
+    // Request microphone permission after a delay to ensure:
+    // 1. App UI is fully loaded
+    // 2. Other permissions (notifications, Firebase messaging) are requested first
+    // 3. User sees the app before being prompted
+    // 4. No conflicts with other permission requests
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      PermissionRequestHelper.requestMicrophonePermission(context);
+      // Add a 3-second delay to ensure:
+      // - Notification permissions are requested and completed first
+      // - Firebase messaging permissions are handled
+      // - App is fully initialized and stable
+      Future.delayed(const Duration(seconds: 5), () {
+        if (mounted) {
+          debugPrint('🎤 Requesting microphone permission after delay...');
+          PermissionRequestHelper.requestMicrophonePermission(context);
+        }
+      });
     });
   }
 

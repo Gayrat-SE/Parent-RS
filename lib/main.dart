@@ -11,16 +11,16 @@ import 'flutter_flow/awesome_notification_helper.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize Firebase (required for app to work)
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
 
-  // Firebase Messaging permission
-  await FirebaseMessaging.instance.requestPermission();
-
-  await AwesomeNotificationHelper.initialize();
+  // Initialize notifications without requesting permissions yet
+  // This sets up the notification channels but doesn't block startup
+  await AwesomeNotificationHelper.initializeWithoutPermissions();
 
   // Setup foreground message handler
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -36,15 +36,43 @@ void main() async {
   // FCM token refresh listener'ni sozlash
   FCMTokenHelper.setupTokenRefreshListener();
 
-  // FCM tokenni olish va log qilish
-  final token = await FCMTokenHelper.getFCMToken();
-  debugPrint('Initial FCM Token: $token');
-
-  // Note: Microphone permission will be requested when HomePage loads
-  // This ensures proper UI context for the permission dialog
-  debugPrint('🎤 Microphone permission will be requested when app UI is ready');
-
+  // Start the app immediately - don't wait for permissions or tokens
   runApp(const MyApp());
+
+  // Initialize Firebase Messaging and FCM token asynchronously after app starts
+  // This prevents blocking the UI
+  _initializeMessagingAsync();
+}
+
+/// Initialize Firebase Messaging and FCM token asynchronously
+/// This runs after the app UI is displayed to avoid blocking startup
+Future<void> _initializeMessagingAsync() async {
+  try {
+    debugPrint('🚀 Starting async Firebase Messaging initialization...');
+
+    // Add a small delay to ensure app UI is fully rendered
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Request notification permissions first (AwesomeNotifications)
+    // This is the primary notification system for the app
+    debugPrint('📱 Requesting notification permissions...');
+    await AwesomeNotificationHelper.requestPermissions();
+    debugPrint('✅ Notification permissions requested');
+
+    // Small delay between permission requests to avoid conflicts
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    // Request Firebase Messaging permission
+    debugPrint('🔔 Requesting Firebase Messaging permission...');
+    await FirebaseMessaging.instance.requestPermission();
+    debugPrint('✅ Firebase Messaging permission requested');
+
+    // Get FCM token (non-blocking, happens in background)
+    final token = await FCMTokenHelper.getFCMToken();
+    debugPrint('✅ Initial FCM Token: $token');
+  } catch (e) {
+    debugPrint('⚠️ Error during async messaging initialization: $e');
+  }
 }
 
 class MyApp extends StatefulWidget {

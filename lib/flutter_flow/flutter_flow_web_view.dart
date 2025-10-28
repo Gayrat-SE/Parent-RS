@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -37,65 +38,85 @@ class FlutterFlowWebView extends StatefulWidget {
   _FlutterFlowWebViewState createState() => _FlutterFlowWebViewState();
 }
 
+var isLoading = true;
+
 class _FlutterFlowWebViewState extends State<FlutterFlowWebView> {
   @override
-  Widget build(BuildContext context) => WebViewX(
-        key: webviewKey,
-        width: widget.width ?? MediaQuery.sizeOf(context).width,
-        height: widget.height ?? MediaQuery.sizeOf(context).height,
-        ignoreAllGestures: false,
-        initialContent: widget.content,
-        initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.alwaysAllow,
-        initialSourceType: widget.html
-            ? SourceType.html
-            : widget.bypass
-                ? SourceType.urlBypass
-                : SourceType.url,
-        javascriptMode: JavascriptMode.unrestricted,
-        onWebViewCreated: (controller) async {
-          if (controller.connector is WebViewController && isAndroid) {
-            final androidController =
-                controller.connector.platform as AndroidWebViewController;
-            await androidController.setOnShowFileSelector(_androidFilePicker);
-          }
-          widget.onCreated(controller);
-        },
-        navigationDelegate: (request) async {
-          if (isAndroid) {
-            if (request.content.source
-                .startsWith('https://api.whatsapp.com/send?phone')) {
-              String url = request.content.source;
+  Widget build(BuildContext context) =>
+      //Add loading indicator
+      isLoading
+          ? const Center(
+              child: CupertinoActivityIndicator(color: Colors.blue, radius: 10))
+          : WebViewX(
+              key: webviewKey,
+              width: widget.width ?? MediaQuery.sizeOf(context).width,
+              height: widget.height ?? MediaQuery.sizeOf(context).height,
+              ignoreAllGestures: false,
+              initialContent: widget.content,
+              initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.alwaysAllow,
+              initialSourceType: widget.html
+                  ? SourceType.html
+                  : widget.bypass
+                      ? SourceType.urlBypass
+                      : SourceType.url,
+              javascriptMode: JavascriptMode.unrestricted,
+              onPageStarted: (url) {
+                setState(() {
+                  isLoading = true;
+                });
+                debugPrint("WebView started loading: $url");
+              },
+              onPageFinished: (url) {
+                setState(() {
+                  isLoading = false;
+                });
+                debugPrint("WebView finished loading: $url");
+              },
+              onWebViewCreated: (controller) async {
+                if (controller.connector is WebViewController && isAndroid) {
+                  final androidController =
+                      controller.connector.platform as AndroidWebViewController;
+                  await androidController
+                      .setOnShowFileSelector(_androidFilePicker);
+                }
+                widget.onCreated(controller);
+              },
+              navigationDelegate: (request) async {
+                if (isAndroid) {
+                  if (request.content.source
+                      .startsWith('https://api.whatsapp.com/send?phone')) {
+                    String url = request.content.source;
 
-              await launchUrl(
-                Uri.parse(url),
-                mode: LaunchMode.externalApplication,
-              );
-              return NavigationDecision.prevent;
-            }
-          }
-          return NavigationDecision.navigate;
-        },
-        webSpecificParams: const WebSpecificParams(
-          webAllowFullscreenContent: true,
-        ),
-        mobileSpecificParams: MobileSpecificParams(
-          debuggingEnabled: true,
-          gestureNavigationEnabled: true,
-          mobileGestureRecognizers: {
-            if (widget.verticalScroll)
-              Factory<VerticalDragGestureRecognizer>(
-                () => VerticalDragGestureRecognizer(),
+                    await launchUrl(
+                      Uri.parse(url),
+                      mode: LaunchMode.externalApplication,
+                    );
+                    return NavigationDecision.prevent;
+                  }
+                }
+                return NavigationDecision.navigate;
+              },
+              webSpecificParams: const WebSpecificParams(
+                webAllowFullscreenContent: true,
               ),
-            if (widget.horizontalScroll)
-              Factory<HorizontalDragGestureRecognizer>(
-                () => HorizontalDragGestureRecognizer(),
+              mobileSpecificParams: MobileSpecificParams(
+                debuggingEnabled: true,
+                gestureNavigationEnabled: true,
+                mobileGestureRecognizers: {
+                  if (widget.verticalScroll)
+                    Factory<VerticalDragGestureRecognizer>(
+                      () => VerticalDragGestureRecognizer(),
+                    ),
+                  if (widget.horizontalScroll)
+                    Factory<HorizontalDragGestureRecognizer>(
+                      () => HorizontalDragGestureRecognizer(),
+                    ),
+                },
+                androidEnableHybridComposition: true,
               ),
-          },
-          androidEnableHybridComposition: true,
-        ),
-        userAgent:
-            'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36',
-      );
+              userAgent:
+                  'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36',
+            );
 
   Key get webviewKey => Key(
         [

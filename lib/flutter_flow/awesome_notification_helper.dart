@@ -34,6 +34,31 @@ class AwesomeNotificationHelper {
     setupListeners();
   }
 
+  /// Initialize AwesomeNotifications without requesting permissions
+  /// This is used during app startup to avoid blocking the UI
+  static Future<void> initializeWithoutPermissions() async {
+    await AwesomeNotifications().initialize(
+      null, // Default app icon
+      [
+        NotificationChannel(
+          channelKey: channelKey,
+          channelName: channelName,
+          channelDescription: channelDescription,
+          defaultColor: const Color(0xFF9D50DD),
+          ledColor: Colors.white,
+          importance: NotificationImportance.Max,
+          channelShowBadge: true,
+          playSound: true,
+          enableVibration: true,
+        ),
+      ],
+      debug: true,
+    );
+
+    // Set up notification listeners (but don't request permissions yet)
+    setupListeners();
+  }
+
   /// Request notification permissions
   static Future<bool> requestPermissions() async {
     bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
