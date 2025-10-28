@@ -240,7 +240,7 @@ dart run flutter_native_splash:remove
 After the startup optimization, microphone permission was being auto-denied or showing "NotReadableError" on Android.
 
 ### Solution
-See [MICROPHONE_PERMISSION_FIX.md](MICROPHONE_PERMISSION_FIX.md) for detailed information.
+See [MICROPHONE_PERMISSION_FIX.md](MICROPHONE_PERMISSION_FIX (Android).md) for detailed information.
 
 **Key fixes**:
 1. ✅ Added 5-second delay before requesting microphone permission
